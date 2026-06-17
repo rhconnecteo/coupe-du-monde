@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title></title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-content">
+        <div class="header-title-wrapper">
+          <img class="header-gif" src="connecteo.gif" alt="Coupe du Monde" />
+          <h1><span class="header-trophy">🏆</span> Score de jeu Coupe du Monde</h1>
+        </div>
+        <div class="header-balloons"></div>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <section class="panel panel-individuel">
+        <div class="panel-frame">
+          <div class="frame-dots"><span></span><span></span><span></span></div>
+          <div class="frame-title">Live – Individuel</div>
+        </div>
+        <div class="panel-header">
+          <h2><span class="panel-icon">⭐</span> Individuel</h2>
+        </div>
+        <div id="individualList" class="table-wrapper"></div>
+      </section>
+
+      <section class="panel panel-collectif">
+        <div class="panel-frame">
+          <div class="frame-dots"><span></span><span></span><span></span></div>
+          <div class="frame-title">Live – Collectif</div>
+        </div>
+        <div class="panel-header">
+          <h2><span class="panel-icon">👥</span> Collectif</h2>
+        </div>
+        <div id="collectiveList" class="table-wrapper"></div>
+      </section>
+
+      <section class="panel panel-quick">
+        <div class="panel-frame">
+          <div class="frame-dots"><span></span><span></span><span></span></div>
+          <div class="frame-title">Live – Jeu Rapide</div>
+        </div>
+        <div class="panel-header">
+          <h2><span class="panel-icon">⚡</span> Jeu Rapide</h2>
+        </div>
+        <div id="quickGameList" class="table-wrapper"></div>
+      </section>
+
+      <section class="panel panel-top panel-full">
+        <div class="panel-frame">
+          <div class="frame-dots"><span></span><span></span><span></span></div>
+          <div class="frame-title">Live – Top Pôles</div>
+        </div>
+        <div class="panel-header">
+          <h2><span class="panel-icon">🏅</span> Top Pôles</h2>
+          <p>Histogramme des pôles avec le total des points</p>
+        </div>
+        <div id="topPoleChart" class="bar-chart"></div>
+      </section>
+    </div>
+
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>
