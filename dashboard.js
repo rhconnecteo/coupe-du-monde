@@ -251,7 +251,6 @@ function renderCollectiveTable(data) {
         <tbody>${rows}</tbody>
       </table>
     </div>
-    <p class="table-note">Cliquez sur un pôle pour voir les détails de la finale.</p>
   `;
 }
 
