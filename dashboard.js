@@ -1,3 +1,8 @@
+// dashboard.js
+// ============================
+// FONCTIONS UTILITAIRES
+// ============================
+
 function escapeHtml(value) {
   if (value === undefined || value === null) return '';
   return String(value)
@@ -20,7 +25,10 @@ function showError(message) {
   document.getElementById('topPoleChart').innerHTML = html;
 }
 
-// Interactive helpers: pole colors, balloons and auto-rotate
+// ============================
+// INTERACTIONS (Ballons, couleurs, rotation)
+// ============================
+
 const _panelIntervals = [];
 const _balloonIntervals = [];
 
@@ -63,11 +71,9 @@ function addBalloonsToPanel(panelEl) {
     container.appendChild(b);
     setTimeout(() => { b.remove(); }, 9000 + Math.random() * 3000);
   };
-  // Create 15 balloons immediately for simultaneous display
   for (let i = 0; i < 15; i++) {
     createBalloon();
   }
-  // Then continuously add new balloons
   const interval = setInterval(createBalloon, 300);
   _balloonIntervals.push(interval);
 }
@@ -83,7 +89,7 @@ function startAutoRotate() {
   const coll = document.getElementById('collectiveList')?.closest('.panel');
   const quick = document.getElementById('quickGameList')?.closest('.panel');
   const top = document.getElementById('topPoleChart')?.closest('.panel');
-  const all = null; // show all
+  const all = null;
   if (indiv) panels.push(indiv);
   if (coll) panels.push(coll);
   if (quick) panels.push(quick);
@@ -118,6 +124,10 @@ function stopAutoRotate() {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('panel-focused'));
 }
 
+// ============================
+// CHARGEMENT DU DASHBOARD
+// ============================
+
 async function loadDashboard() {
   document.getElementById('individualList').innerHTML = loadingMarkup();
   document.getElementById('collectiveList').innerHTML = loadingMarkup();
@@ -135,13 +145,17 @@ async function loadDashboard() {
     renderIndividualTable(individualData);
     renderCollectiveTable(collectiveData);
     renderQuickGameTable(quickGameData);
-    renderTopPoleChart(topPoleData);
+    renderTopPoleChart(individualData, collectiveData, quickGameData);
     try { startAutoRotate(); } catch(e){ console.warn('Auto-rotate failed', e); }
   } catch (error) {
     console.error('Erreur dashboard:', error);
     showError(error.message || 'Impossible de charger le dashboard');
   }
 }
+
+// ============================
+// RENDU INDIVIDUEL (TOUS LES ÉLÉMENTS AVEC SCROLL)
+// ============================
 
 function renderIndividualTable(data) {
   const wrapper = document.getElementById('individualList');
@@ -150,52 +164,55 @@ function renderIndividualTable(data) {
     return;
   }
 
-  const rows = data
-    .sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0))
-    .slice(0, 6)
-    .map(person => {
-      const weeks = Array.isArray(person.semaines) ? [...new Set(person.semaines.map(s => s.semaine).filter(Boolean))].join(', ') : '';
-      const poleName = person.poles || person.rattachement || '';
-      const poleColor = getPoleColor(poleName);
-      return `
-        <tr onclick="showIndividualDetail('${escapeHtml(person.matricule || '')}')">
-          <td>${escapeHtml(person.nom || '')}</td>
-          <td><span class="pole-badge" style="background:${poleColor}"></span> ${escapeHtml(poleName)}</td>
-          <td>${escapeHtml(weeks)}</td>
-          <td>${person.totalPointages || 0}</td>
-          <td>${person.totalParies || 0}</td>
-          <td>${person.pointQuizz || 0}</td>
-          <td>${person.totalPoints || 0}</td>
-        </tr>
-      `;
-    })
-    .join('');
-  // disable horizontal scroll for individuel to show full table in the panel
+  // Trier par points totaux (du plus haut au plus bas)
+  const sorted = [...data].sort((a, b) => (b.totalPoints || 0) - (a.totalPoints || 0));
+  
+  // Afficher TOUS les éléments avec un scroll
+  const rows = sorted.map(person => {
+    const weeks = Array.isArray(person.semaines) 
+      ? [...new Set(person.semaines.map(s => s.semaine).filter(Boolean))].join(', ') 
+      : '';
+    const poleName = person.poles || person.rattachement || '';
+    const poleColor = getPoleColor(poleName);
+    return `
+      <tr onclick="showIndividualDetail('${escapeHtml(person.matricule || '')}')">
+        <td>${escapeHtml(person.nom || '')}</td>
+        <td><span class="pole-badge" style="background:${poleColor}"></span> ${escapeHtml(poleName)}</td>
+        <td>${escapeHtml(weeks)}</td>
+        <td>${person.totalPointages || 0}</td>
+        <td>${person.totalParies || 0}</td>
+        <td>${person.pointQuizz || 0}</td>
+        <td>${person.totalPoints || 0}</td>
+      </tr>
+    `;
+  }).join('');
+
   wrapper.innerHTML = `
-    <div class="table-scroll no-hscroll">
+    <div class="table-scroll no-hscroll" style="max-height: 320px; overflow-y: auto;">
       <table class="table">
         <thead>
           <tr>
-            <th><span>Nom et prénoms</span></th>
-            <th><span>Pôles</span></th>
+            <th><span>Nom</span></th>
+            <th><span>Pôle</span></th>
             <th><span>Semaine</span></th>
-            <th>
-              <span>Point Pointage</span>
-            </th>
-            <th>
-              <span>Point Paris</span>
-            </th>
-            <th>
-              <span>Point Quizz</span>
-            </th>
-            <th><span>Total de point</span></th>
+            <th><span>Pointage</span></th>
+            <th><span>Paris</span></th>
+            <th><span>Quizz</span></th>
+            <th><span>Total</span></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
+    <div style="text-align: center; padding: 6px 0; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">
+      ${sorted.length} participants
+    </div>
   `;
 }
+
+// ============================
+// RENDU COLLECTIF (TOUS LES ÉLÉMENTS AVEC SCROLL)
+// ============================
 
 function renderCollectiveTable(data) {
   const wrapper = document.getElementById('collectiveList');
@@ -204,13 +221,12 @@ function renderCollectiveTable(data) {
     return;
   }
 
-  const rows = data
-    .sort((a, b) => (b.total || b.totalGeneral || 0) - (a.total || a.totalGeneral || 0))
-    .slice(0, 6)
-    .map(group => {
-      const name = group.pole || group.name || '';
-      const color = getPoleColor(name);
-      return `
+  const sorted = [...data].sort((a, b) => (b.total || b.totalGeneral || 0) - (a.total || a.totalGeneral || 0));
+  
+  const rows = sorted.map(group => {
+    const name = group.pole || group.name || '';
+    const color = getPoleColor(name);
+    return `
       <tr onclick="showCollectiveDetail('${escapeHtml(name)}')">
         <td><span class="pole-badge" style="background:${color}"></span> ${escapeHtml(name)}</td>
         <td>${group.footPoints || 0}</td>
@@ -220,39 +236,35 @@ function renderCollectiveTable(data) {
         <td>${group.total || 0}</td>
         <td>${group.totalGeneral || group.total || 0}</td>
       </tr>
-    `
-    })
-    .join('');
+    `;
+  }).join('');
 
   wrapper.innerHTML = `
-    <div class="table-scroll">
+    <div class="table-scroll" style="max-height: 320px; overflow-y: auto;">
       <table class="table">
         <thead>
           <tr>
-            <th><span>Pôles</span></th>
-            <th>
-              <span>Foot</span>
-            </th>
-            <th>
-              <span>Baby-foot</span>
-            </th>
-            <th>
-              <span>Dress code</span>
-            </th>
-            <th>
-              <span>Tir au but</span>
-            </th>
-            <th>
-              <span>Total</span>
-            </th>
+            <th><span>Pôle</span></th>
+            <th><span>Foot</span></th>
+            <th><span>Baby-foot</span></th>
+            <th><span>Dress code</span></th>
+            <th><span>Tir au but</span></th>
+            <th><span>Total</span></th>
             <th><span>Total général</span></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
+    <div style="text-align: center; padding: 6px 0; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">
+      ${sorted.length} pôles
+    </div>
   `;
 }
+
+// ============================
+// RENDU JEU RAPIDE (TOUS LES ÉLÉMENTS AVEC SCROLL)
+// ============================
 
 function renderQuickGameTable(data) {
   const wrapper = document.getElementById('quickGameList');
@@ -261,13 +273,12 @@ function renderQuickGameTable(data) {
     return;
   }
 
-  const rows = data
-    .sort((a, b) => (b.points || 0) - (a.points || 0))
-    .slice(0, 6)
-    .map(item => {
-      const poleName = item.poles || '';
-      const color = getPoleColor(poleName);
-      return `
+  const sorted = [...data].sort((a, b) => (b.points || 0) - (a.points || 0));
+  
+  const rows = sorted.map(item => {
+    const poleName = item.poles || '';
+    const color = getPoleColor(poleName);
+    return `
       <tr>
         <td>${escapeHtml(item.matricule || '')}</td>
         <td>${escapeHtml(item.nom || '')}</td>
@@ -275,57 +286,148 @@ function renderQuickGameTable(data) {
         <td>${escapeHtml(item.semaine || '')}</td>
         <td>${item.points || 0}</td>
       </tr>
-    `
-    })
-    .join('');
+    `;
+  }).join('');
 
   wrapper.innerHTML = `
-    <div class="table-scroll">
+    <div class="table-scroll" style="max-height: 320px; overflow-y: auto;">
       <table class="table">
         <thead>
           <tr>
             <th><span>Matricule</span></th>
-            <th><span>Nom et prénoms</span></th>
-            <th><span>Pôles</span></th>
+            <th><span>Nom</span></th>
+            <th><span>Pôle</span></th>
             <th><span>Semaine</span></th>
-            <th><span>Point Jeu Rapide</span></th>
+            <th><span>Points</span></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
+    <div style="text-align: center; padding: 6px 0; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">
+      ${sorted.length} participants
+    </div>
   `;
 }
 
-function renderTopPoleChart(data) {
+// ============================
+// RENDU TOP PÔLES (TOUS LES ÉLÉMENTS AVEC SCROLL)
+// ============================
+
+function renderTopPoleChart(individualData, collectiveData, quickGameData) {
   const wrapper = document.getElementById('topPoleChart');
-  if (!data || data.length === 0) {
+  
+  // 1. Récupérer tous les noms de pôles uniques
+  const allPoles = new Set();
+  
+  (individualData || []).forEach(p => {
+    const pole = p.poles || p.rattachement || '';
+    if (pole) allPoles.add(pole);
+  });
+  
+  (collectiveData || []).forEach(p => {
+    const pole = p.pole || p.name || '';
+    if (pole) allPoles.add(pole);
+  });
+  
+  (quickGameData || []).forEach(p => {
+    const pole = p.poles || '';
+    if (pole) allPoles.add(pole);
+  });
+
+  if (allPoles.size === 0) {
+    wrapper.innerHTML = '<div class="empty-state">Aucun pôle disponible</div>';
+    return;
+  }
+
+  // 2. Calculer les totaux par pôle
+  const poleTotals = {};
+  const poleColors = {};
+
+  allPoles.forEach(pole => {
+    let individualTotal = 0;
+    (individualData || []).forEach(p => {
+      const pPole = p.poles || p.rattachement || '';
+      if (pPole === pole) {
+        individualTotal += p.totalPoints || 0;
+      }
+    });
+
+    let collectiveTotal = 0;
+    (collectiveData || []).forEach(p => {
+      const pPole = p.pole || p.name || '';
+      if (pPole === pole) {
+        collectiveTotal += p.totalGeneral || p.total || 0;
+      }
+    });
+
+    let quickTotal = 0;
+    (quickGameData || []).forEach(p => {
+      const pPole = p.poles || '';
+      if (pPole === pole) {
+        quickTotal += p.points || 0;
+      }
+    });
+
+    const grandTotal = individualTotal + collectiveTotal + quickTotal;
+    
+    poleTotals[pole] = {
+      individual: individualTotal,
+      collective: collectiveTotal,
+      quick: quickTotal,
+      total: grandTotal
+    };
+    
+    poleColors[pole] = getPoleColor(pole);
+  });
+
+  // 3. Trier les pôles par total général
+  const sortedPoles = Object.keys(poleTotals).sort(
+    (a, b) => poleTotals[b].total - poleTotals[a].total
+  );
+
+  if (sortedPoles.length === 0) {
     wrapper.innerHTML = '<div class="empty-state">Aucune donnée Top Pôle disponible</div>';
     return;
   }
 
-  const maxValue = Math.max(...data.map(item => item.totalPoints || item.total || 0), 1);
-  const rows = data
-    .slice(0, 6)
-    .map(item => {
-      const value = item.totalPoints || item.total || 0;
-      const width = Math.round((value / maxValue) * 100);
-      const poleName = item.pole || item.name || 'Non renseigné';
-      const color = getPoleColor(poleName);
-      return `
-        <div class="bar-row">
-          <div class="bar-label">${escapeHtml(poleName)}</div>
-          <div class="bar-fill">
-            <div class="bar-fill-inner" style="width: ${width}%; background: ${color}"></div>
-          </div>
-          <div class="bar-value">${value}</div>
-        </div>
-      `;
-    })
-    .join('');
+  const maxValue = Math.max(...sortedPoles.map(p => poleTotals[p].total), 1);
 
-  wrapper.innerHTML = rows;
+  // 4. Afficher TOUS les pôles avec scroll
+  const rows = sortedPoles.map(pole => {
+    const data = poleTotals[pole];
+    const width = Math.round((data.total / maxValue) * 100);
+    const color = poleColors[pole];
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${escapeHtml(pole)}</div>
+        <div class="bar-fill">
+          <div class="bar-fill-inner" style="width: ${width}%; background: ${color}"></div>
+        </div>
+        <div class="bar-value">${data.total}</div>
+      </div>
+    `;
+  }).join('');
+
+  wrapper.innerHTML = `
+    <div class="bar-chart-scroll" style="max-height: 300px; overflow-y: auto;">
+      ${rows}
+    </div> 
+  `;
 }
+// <div style="text-align: center; padding: 4px 0; font-size: 0.7rem; color: var(--text-secondary); opacity: 0.7;">
+    //   ${sortedPoles.length} pôles • ↓ Scroll pour voir plus
+    // </div>
+// ============================
+// MODALS
+// ============================
+
+//<div class="bar-legend">
+  //    <span style="color:#6C63FF;">● Individuel</span>
+    //  <span style="color:#FFD36B;">● Collectif</span>
+      //<span style="color:#FF7A7A;">● Jeu Rapide</span>
+      //<span style="font-weight:600;">= Total Général</span>
+    //</div>
 
 function showIndividualDetail(matricule) {
   const modal = document.getElementById('modal');
@@ -333,7 +435,9 @@ function showIndividualDetail(matricule) {
   api.getIndividualData().then(data => {
     const person = (Array.isArray(data) ? data : []).find(item => item.matricule === matricule);
     if (!person) return;
-    const weeks = Array.isArray(person.semaines) ? person.semaines.map(s => `${escapeHtml(s.semaine)}: ${s.points || 0} pts`).join('<br>') : '';
+    const weeks = Array.isArray(person.semaines) 
+      ? person.semaines.map(s => `${escapeHtml(s.semaine)}: ${s.points || 0} pts`).join('<br>') 
+      : '';
     body.innerHTML = `
       <div class="modal-person">
         <div class="modal-avatar">${escapeHtml((person.nom || '').slice(0,2).toUpperCase())}</div>
@@ -384,6 +488,5 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closeModal();
   }
-});
-
+})
 document.addEventListener('DOMContentLoaded', loadDashboard);

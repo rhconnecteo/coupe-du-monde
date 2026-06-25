@@ -651,6 +651,20 @@ body {
 .panel-top {
   background: linear-gradient(135deg, rgba(39, 23, 57, 0.92), rgba(73, 37, 109, 0.9));
   border-color: rgba(217, 117, 255, 0.22);
+  min-height: 380px; /* Réduire la hauteur minimale */
+  max-height: 450px; /* Limiter la hauteur maximale */
+  height: auto; /* Ou fixer une hauteur spécifique comme 400px */
+}
+
+/* Ou bien réduire la hauteur du contenu interne */
+.panel-top .bar-chart {
+  max-height: 250px; /* Réduire l'espace pour les barres */
+  overflow-y: auto;
+}
+
+.panel-top .bar-chart-scroll {
+  max-height: 200px; /* Réduire la hauteur de la zone scrollable */
+  overflow-y: auto;
 }
 
 .panel-focused {
@@ -1038,5 +1052,119 @@ body {
   
   .search-box {
     min-width: auto;
+  }
+}
+
+/* ============================
+   STYLES POUR LE SCROLL DES TABLEAUX
+   ============================ */
+
+/* Conteneur de tableau avec scroll */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 320px;
+  flex: 1;
+  scroll-behavior: smooth;
+}
+
+/* Style du scrollbar */
+.table-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(108, 99, 255, 0.4);
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(108, 99, 255, 0.6);
+}
+
+/* Scroll pour Firefox */
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(108, 99, 255, 0.4) rgba(255, 255, 255, 0.05);
+}
+
+/* Barre de scroll pour Top Pôles */
+.bar-chart-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scroll-behavior: smooth;
+}
+
+.bar-chart-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bar-chart-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.bar-chart-scroll::-webkit-scrollbar-thumb {
+  background: rgba(108, 99, 255, 0.4);
+  border-radius: 10px;
+}
+
+.bar-chart-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(108, 99, 255, 0.6);
+}
+
+/* Indicateur de scroll */
+.scroll-indicator {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Légende pour Top Pôles */
+.bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 0 8px 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 8px;
+}
+
+/* Pour les tableaux sur mobile */
+@media (max-width: 768px) {
+  .table-scroll {
+    max-height: 250px;
+  }
+  
+  .bar-chart-scroll {
+    max-height: 200px;
+  }
+  
+  /* Permettre le scroll horizontal sur les petits écrans */
+  .table-scroll {
+    overflow-x: auto;
+  }
+  
+  .table {
+    min-width: 600px;
   }
 }
