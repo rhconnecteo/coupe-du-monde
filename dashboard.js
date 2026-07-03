@@ -179,9 +179,9 @@ function renderIndividualTable(data) {
         <td>${escapeHtml(person.nom || '')}</td>
         <td><span class="pole-badge" style="background:${poleColor}"></span> ${escapeHtml(poleName)}</td>
         <td>${escapeHtml(weeks)}</td>
-        <td>${person.totalPointages || 0}</td>
-        <td>${person.totalParies || 0}</td>
-        <td>${person.pointQuizz || 0}</td>
+        <td>${person.totalPoint || 0}</td>
+        <td>${person.totalParis || 0}</td>
+        <td>${person.totalQuizz || 0}</td>
         <td>${person.totalPoints || 0}</td>
       </tr>
     `;
@@ -444,10 +444,10 @@ function showIndividualDetail(matricule) {
         <h2>${escapeHtml(person.nom || '')}</h2>
         <p class="subtitle">${escapeHtml(person.fonction || '')} • ${escapeHtml(person.poles || person.rattachement || '')}</p>
         <div class="modal-stats">
-          <div class="modal-stat"><div class="value">${person.totalPointages || 0}</div><div class="label">Pointage</div></div>
-          <div class="modal-stat"><div class="value">${person.totalParies || 0}</div><div class="label">Paris</div></div>
-          <div class="modal-stat"><div class="value">${person.pointQuizz || 0}</div><div class="label">Quizz</div></div>
-          <div class="modal-stat"><div class="value">${person.totalPoints || 0}</div><div class="label">Total</div></div>
+          <div class="modal-stat"><div class="value">${person.totalPoint || 0}</div><div class="label">Point</div></div>
+          <div class="modal-stat"><div class="value">${person.totalParis || 0}</div><div class="label">Paris</div></div>
+          <div class="modal-stat"><div class="value">${person.totalQuizz || 0}</div><div class="label">Quizz</div></div>
+          <div class="modal-stat"><div class="value">${person.totalPoints || 0}</div><div class="label">Total de point</div></div>
         </div>
         <div style="margin-top:16px; color: var(--text-secondary); font-size:0.95rem;">${weeks}</div>
       </div>

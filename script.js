@@ -174,12 +174,12 @@ function showPersonDetails(matricule) {
         <h3 style="margin-bottom: 10px;">📊 Détails individuels</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
           <div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary);">Pointages</div>
-            <div style="font-size: 1.2rem; font-weight: 600;">${details.totalPointages || 0}</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Points</div>
+            <div style="font-size: 1.2rem; font-weight: 600;">${details.totalPoint || 0}</div>
           </div>
           <div>
-            <div style="font-size: 0.8rem; color: var(--text-secondary);">Paries</div>
-            <div style="font-size: 1.2rem; font-weight: 600;">${details.totalParies || 0}</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Paris</div>
+            <div style="font-size: 1.2rem; font-weight: 600;">${details.totalParis || 0}</div>
           </div>
           <div>
             <div style="font-size: 0.8rem; color: var(--text-secondary);">Semaines</div>

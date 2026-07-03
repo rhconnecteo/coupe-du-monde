@@ -120,11 +120,11 @@ function getIndividualData() {
     const nomIndex = getHeaderIndex(headers, ['Nom et Prénom', 'Nom et prénom', 'Nom et prénoms', 'Nom', 'nom']);
     const fonctionIndex = getHeaderIndex(headers, ['Fonction', 'fonction']);
     const rattachementIndex = getHeaderIndex(headers, ['Rattachement', 'Pôles', 'Pôle', 'Pole', 'pole']);
-    const totalPointIndex = getHeaderIndex(headers, ['Total de point', 'Total de points', 'Total', 'Points', 'Score']);
+    const pointIndex = getHeaderIndex(headers, ['Point', 'Points', 'point']);
+    const parisIndex = getHeaderIndex(headers, ['Paris', 'Parie', 'pronostic', 'Pronostic']);
+    const quizzIndex = getHeaderIndex(headers, ['Quiz', 'Quizz', 'Point Quizz', 'point quizz', 'point quiz']);
+    const totalPointIndex = getHeaderIndex(headers, ['Total de point', 'Total de points', 'Total', 'Score']);
     const semaineIndex = getHeaderIndex(headers, ['Semaine', 'semaine']);
-    const pointageIndex = getHeaderIndex(headers, ['Nombre de pointage', 'Pointage', 'pointage']);
-    const parieIndex = getHeaderIndex(headers, ['Nombre de parie', 'Parie', 'parie']);
-    const quizzIndex = getHeaderIndex(headers, ['Point Quizz', 'Quizz', 'Quiz', 'point quizz', 'point quiz']);
     
     const peopleMap = new Map();
     
@@ -138,38 +138,39 @@ function getIndividualData() {
           nom: row[nomIndex] || '',
           fonction: row[fonctionIndex] || '',
           rattachement: row[rattachementIndex] || '',
+          poles: row[rattachementIndex] || '',
+          totalPoint: 0,
+          totalParis: 0,
+          totalQuizz: 0,
           totalPoints: 0,
-          semaines: [],
-          totalPointages: 0,
-          totalParies: 0,
-          pointQuizz: 0
+          semaines: []
         });
       }
       
       const person = peopleMap.get(matricule);
-      const points = parseNumber(row[totalPointIndex]);
-      const pointages = parseNumber(row[pointageIndex]);
-      const paries = parseNumber(row[parieIndex]);
+      const points = parseNumber(row[pointIndex]);
+      const paris = parseNumber(row[parisIndex]);
       const quizz = parseNumber(row[quizzIndex]);
+      const total = parseNumber(row[totalPointIndex]);
 
-      person.totalPoints += points;
-      person.totalPointages += pointages;
-      person.totalParies += paries;
-      person.pointQuizz += quizz;
+      person.totalPoint += points;
+      person.totalParis += paris;
+      person.totalQuizz += quizz;
+      person.totalPoints += total;
       
       if (row[semaineIndex]) {
         person.semaines.push({
           semaine: row[semaineIndex],
-          points: points,
-          pointages: pointages,
-          paries: paries,
-          quizz: quizz
+          point: points,
+          paris: paris,
+          quizz: quizz,
+          total: total
         });
       }
     });
     
     return Array.from(peopleMap.values())
-      .filter(person => person.totalPoints > 0 || person.totalPointages > 0 || person.totalParies > 0)
+      .filter(person => person.totalPoints > 0 || person.totalPoint > 0 || person.totalParis > 0 || person.totalQuizz > 0)
       .sort((a, b) => b.totalPoints - a.totalPoints);
       
   } catch (error) {
@@ -216,7 +217,7 @@ function getTopPoleData() {
 
     individual.forEach(item => {
       const pole = String(item.pole || item.rattachement || 'Non renseigné');
-      const value = item.totalPoints || (parseNumber(item.nombrePointage) + parseNumber(item.nombreParies) + parseNumber(item.pointQuizz));
+      const value = item.totalPoints || (parseNumber(item.totalPoint) + parseNumber(item.totalParis) + parseNumber(item.totalQuizz));
       groups[pole] = groups[pole] || { pole: pole, totalPoints: 0 };
       groups[pole].totalPoints += value;
     });
