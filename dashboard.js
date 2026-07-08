@@ -224,7 +224,7 @@ function renderCollectiveTable(data) {
   const sorted = [...data].sort((a, b) => (b.total || b.totalGeneral || 0) - (a.total || a.totalGeneral || 0));
   
   const rows = sorted.map(group => {
-    const name = group.pole || group.name || '';
+    const name = group.pole || group.name || group.rattachement || group.poles || '';
     const color = getPoleColor(name);
     return `
       <tr onclick="showCollectiveDetail('${escapeHtml(name)}')">
@@ -233,8 +233,7 @@ function renderCollectiveTable(data) {
         <td>${group.babyFootPoints || 0}</td>
         <td>${group.dressCodePoints || 0}</td>
         <td>${group.tirAuBut || 0}</td>
-        <td>${group.total || 0}</td>
-        <td>${group.totalGeneral || group.total || 0}</td>
+        <td>${group.total || group.totalGeneral || 0}</td>
       </tr>
     `;
   }).join('');
@@ -244,13 +243,12 @@ function renderCollectiveTable(data) {
       <table class="table">
         <thead>
           <tr>
-            <th><span>Pôle</span></th>
+            <th><span>Pôles</span></th>
             <th><span>Foot</span></th>
             <th><span>Baby-foot</span></th>
             <th><span>Dress code</span></th>
             <th><span>Tir au but</span></th>
             <th><span>Total</span></th>
-            <th><span>Total général</span></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -260,6 +258,26 @@ function renderCollectiveTable(data) {
       ${sorted.length} pôles
     </div>
   `;
+
+  // After rendering the collective table, refresh the Top Pôles chart so
+  // collective totals immediately reflect in the chart when collectif changes.
+  if (typeof updateTopPoleChart === 'function') {
+    updateTopPoleChart();
+  }
+}
+
+// Fetch fresh data and re-render the Top Pôles chart.
+async function updateTopPoleChart() {
+  try {
+    const [individualData, collectiveData, quickGameData] = await Promise.all([
+      api.getIndividualData(),
+      api.getCollectiveData(),
+      api.getQuickGameData()
+    ]);
+    renderTopPoleChart(individualData, collectiveData, quickGameData);
+  } catch (e) {
+    console.warn('Erreur lors de la mise à jour du Top Pôles:', e);
+  }
 }
 
 // ============================
@@ -326,7 +344,7 @@ function renderTopPoleChart(individualData, collectiveData, quickGameData) {
   });
   
   (collectiveData || []).forEach(p => {
-    const pole = p.pole || p.name || '';
+    const pole = p.pole || p.name || p.rattachement || p.poles || '';
     if (pole) allPoles.add(pole);
   });
   
@@ -355,7 +373,7 @@ function renderTopPoleChart(individualData, collectiveData, quickGameData) {
 
     let collectiveTotal = 0;
     (collectiveData || []).forEach(p => {
-      const pPole = p.pole || p.name || '';
+      const pPole = p.pole || p.name || p.rattachement || p.poles || '';
       if (pPole === pole) {
         collectiveTotal += p.totalGeneral || p.total || 0;
       }
@@ -460,18 +478,18 @@ function showCollectiveDetail(pole) {
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
   api.getCollectiveData().then(data => {
-    const group = (Array.isArray(data) ? data : []).find(item => (item.pole || item.name || '') === pole);
+    const group = (Array.isArray(data) ? data : []).find(item => (item.pole || item.name || item.rattachement || item.poles || '') === pole);
     if (!group) return;
     body.innerHTML = `
       <div class="modal-person">
-        <h2>${escapeHtml(group.pole || group.name || '')}</h2>
+        <h2><span class="pole-badge" style="background:${getPoleColor(pole)}"></span> ${escapeHtml(group.pole || group.name || group.rattachement || group.poles || '')}</h2>
         <p class="subtitle">Finale tir au but et dress code</p>
         <div class="modal-stats">
           <div class="modal-stat"><div class="value">${group.footPoints || 0}</div><div class="label">Foot</div></div>
           <div class="modal-stat"><div class="value">${group.babyFootPoints || 0}</div><div class="label">Baby-foot</div></div>
           <div class="modal-stat"><div class="value">${group.dressCodePoints || 0}</div><div class="label">Dress code</div></div>
           <div class="modal-stat"><div class="value">${group.tirAuBut || 0}</div><div class="label">Tir au but</div></div>
-          <div class="modal-stat"><div class="value">${group.total || group.totalGeneral || 0}</div><div class="label">Total général</div></div>
+          <div class="modal-stat"><div class="value">${group.total || group.totalGeneral || 0}</div><div class="label">Total</div></div>
         </div>
       </div>
     `;
