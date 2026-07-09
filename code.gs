@@ -65,6 +65,8 @@ function getCollectiveData() {
     const matriculeIndex = getHeaderIndex(headers, ['Matricule', 'matricule']);
     const nomIndex = getHeaderIndex(headers, ['Nom et prénom', 'Nom et Prénom', 'Nom', 'nom']);
     const fonctionIndex = getHeaderIndex(headers, ['Fonction', 'fonction']);
+    const groupIndex = getHeaderIndex(headers, ['Groupe', 'Group', 'Groupes', 'Nom du groupe']);
+    const pointsIndex = getHeaderIndex(headers, ['Points', 'Point', 'Score', 'Total points', 'Total']);
     const rattachementIndex = getHeaderIndex(headers, ['Pôles', 'Pôle', 'Pole', 'pole', 'Rattachement', 'Rattachement']);
     const footIndex = getHeaderIndex(headers, ['Point Foot', 'Foot', 'Points foot', 'Point foot', 'Foot points']);
     const babyIndex = getHeaderIndex(headers, ['Point baby-foot', 'Baby-foot', 'Baby foot', 'Babyfoot', 'Point baby foot']);
@@ -78,15 +80,23 @@ function getCollectiveData() {
       const babyFootPoints = parseNumber(row[babyIndex]);
       const dressCodePoints = parseNumber(row[dressIndex]);
       const tirAuBut = parseNumber(row[tirIndex]);
+      const points = parseNumber(row[pointsIndex]);
       const total = parseNumber(row[totalIndex]);
       const totalGeneral = parseNumber(row[totalGeneralIndex]);
       const computedTotal = footPoints + babyFootPoints + dressCodePoints;
+      const groupName = row[groupIndex] || row[nomIndex] || row[matriculeIndex] || row[fonctionIndex] || '';
+      const poleName = row[rattachementIndex] || '';
 
       return {
         matricule: row[matriculeIndex] || '',
         nom: row[nomIndex] || '',
         fonction: row[fonctionIndex] || '',
-        rattachement: row[rattachementIndex] || '',
+        group: groupName,
+        name: groupName,
+        points: points,
+        pole: poleName,
+        poles: poleName,
+        rattachement: poleName,
         footPoints: footPoints,
         babyFootPoints: babyFootPoints,
         dressCodePoints: dressCodePoints,
@@ -94,8 +104,8 @@ function getCollectiveData() {
         total: total || computedTotal,
         totalGeneral: totalGeneral || total || computedTotal
       };
-    }).filter(item => item.matricule || item.nom || item.rattachement)
-      .sort((a, b) => (b.totalGeneral || b.total || 0) - (a.totalGeneral || a.total || 0));
+    }).filter(item => item.group || item.matricule || item.nom || item.rattachement || item.pole || item.poles)
+      .sort((a, b) => (b.totalGeneral || b.total || b.points || 0) - (a.totalGeneral || a.total || a.points || 0));
       
   } catch (error) {
     console.error('Erreur collectif:', error);

@@ -221,19 +221,20 @@ function renderCollectiveTable(data) {
     return;
   }
 
-  const sorted = [...data].sort((a, b) => (b.total || b.totalGeneral || 0) - (a.total || a.totalGeneral || 0));
+  const sorted = [...data].sort((a, b) => (b.totalGeneral || b.total || b.points || 0) - (a.totalGeneral || a.total || a.points || 0));
   
   const rows = sorted.map(group => {
-    const name = group.pole || group.name || group.rattachement || group.poles || '';
-    const color = getPoleColor(name);
+    const groupName = group.group || group.name || group.pole || group.rattachement || group.poles || '';
+    const poleName = group.pole || group.rattachement || group.poles || '';
+    const color = getPoleColor(poleName || groupName);
     return `
-      <tr onclick="showCollectiveDetail('${escapeHtml(name)}')">
-        <td><span class="pole-badge" style="background:${color}"></span> ${escapeHtml(name)}</td>
+      <tr onclick="showCollectiveDetail('${escapeHtml(groupName)}')">
+        <td>${escapeHtml(groupName)}</td>
+        <td>${group.points || 0}</td>
+        <td><span class="pole-badge" style="background:${color}"></span> ${escapeHtml(poleName)}</td>
         <td>${group.footPoints || 0}</td>
         <td>${group.babyFootPoints || 0}</td>
-        <td>${group.dressCodePoints || 0}</td>
-        <td>${group.tirAuBut || 0}</td>
-        <td>${group.total || group.totalGeneral || 0}</td>
+        <td>${group.totalGeneral || group.total || 0}</td>
       </tr>
     `;
   }).join('');
@@ -243,19 +244,19 @@ function renderCollectiveTable(data) {
       <table class="table">
         <thead>
           <tr>
-            <th><span>Pôles</span></th>
+            <th><span>Groupe</span></th>
+            <th><span>Points</span></th>
+            <th><span>Pôle</span></th>
             <th><span>Foot</span></th>
             <th><span>Baby-foot</span></th>
-            <th><span>Dress code</span></th>
-            <th><span>Tir au but</span></th>
-            <th><span>Total</span></th>
+            <th><span>Total General</span></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <div style="text-align: center; padding: 6px 0; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.7;">
-      ${sorted.length} pôles
+      ${sorted.length} groupes
     </div>
   `;
 
@@ -344,7 +345,10 @@ function renderTopPoleChart(individualData, collectiveData, quickGameData) {
   });
   
   (collectiveData || []).forEach(p => {
-    const pole = p.pole || p.name || p.rattachement || p.poles || '';
+    let pole = p.pole || p.name || p.rattachement || p.poles || '';
+    if (String(pole).trim().toUpperCase() === 'COMEX') {
+      pole = 'SUPPORT';
+    }
     if (pole) allPoles.add(pole);
   });
   
@@ -373,7 +377,10 @@ function renderTopPoleChart(individualData, collectiveData, quickGameData) {
 
     let collectiveTotal = 0;
     (collectiveData || []).forEach(p => {
-      const pPole = p.pole || p.name || p.rattachement || p.poles || '';
+      let pPole = p.pole || p.name || p.rattachement || p.poles || '';
+      if (String(pPole).trim().toUpperCase() === 'COMEX') {
+        pPole = 'SUPPORT';
+      }
       if (pPole === pole) {
         collectiveTotal += p.totalGeneral || p.total || 0;
       }
@@ -474,22 +481,24 @@ function showIndividualDetail(matricule) {
   }).catch(err => console.warn(err));
 }
 
-function showCollectiveDetail(pole) {
+function showCollectiveDetail(groupName) {
   const modal = document.getElementById('modal');
   const body = document.getElementById('modalBody');
   api.getCollectiveData().then(data => {
-    const group = (Array.isArray(data) ? data : []).find(item => (item.pole || item.name || item.rattachement || item.poles || '') === pole);
+    const group = (Array.isArray(data) ? data : []).find(item => (item.group || item.name || item.pole || item.rattachement || item.poles || '') === groupName);
     if (!group) return;
+    const poleName = group.pole || group.rattachement || group.poles || '';
     body.innerHTML = `
       <div class="modal-person">
-        <h2><span class="pole-badge" style="background:${getPoleColor(pole)}"></span> ${escapeHtml(group.pole || group.name || group.rattachement || group.poles || '')}</h2>
+        <h2><span class="pole-badge" style="background:${getPoleColor(poleName || groupName)}"></span> ${escapeHtml(group.group || group.name || poleName || '')}</h2>
         <p class="subtitle">Finale tir au but et dress code</p>
         <div class="modal-stats">
+          <div class="modal-stat"><div class="value">${group.points || 0}</div><div class="label">Points</div></div>
           <div class="modal-stat"><div class="value">${group.footPoints || 0}</div><div class="label">Foot</div></div>
           <div class="modal-stat"><div class="value">${group.babyFootPoints || 0}</div><div class="label">Baby-foot</div></div>
           <div class="modal-stat"><div class="value">${group.dressCodePoints || 0}</div><div class="label">Dress code</div></div>
           <div class="modal-stat"><div class="value">${group.tirAuBut || 0}</div><div class="label">Tir au but</div></div>
-          <div class="modal-stat"><div class="value">${group.total || group.totalGeneral || 0}</div><div class="label">Total</div></div>
+          <div class="modal-stat"><div class="value">${group.totalGeneral || group.total || 0}</div><div class="label">Total General</div></div>
         </div>
       </div>
     `;
